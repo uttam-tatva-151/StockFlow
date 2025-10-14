@@ -56,6 +56,10 @@ namespace StockFlow.Service.Implementations
             }
         }
 
+        public async Task<string> GenerateAccessTokenAsync(Guid userId, string email)
+        {
+            return GenerateJweToken(userId.ToString(), email, _jwtSettings.AccessTokenExpiryMinutes, Constant.JWT.AccessToken);
+        }
         //public async Task RevokeRefreshTokenAsync(string refreshToken)
         //{
         //    _logger.LogWarning("RevokeRefreshToken called in stateless mode - cannot revoke token.");
