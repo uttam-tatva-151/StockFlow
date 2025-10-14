@@ -1,0 +1,86 @@
+----------------------------------Tables------------------------------------
+--user_auth table
+CREATE TABLE user_auth (
+    user_auth_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    is_verified BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+--roles table
+CREATE TABLE roles (
+    role_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    role_name VARCHAR(50) UNIQUE NOT NULL,
+    description TEXT
+);
+
+--user_roles table
+CREATE TABLE user_roles (
+    user_role_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_auth_id UUID REFERENCES user_auth(user_auth_id) ON DELETE CASCADE,
+    role_id UUID REFERENCES roles(role_id) ON DELETE CASCADE
+);
+
+--audit_logs table
+CREATE TABLE audit_logs (
+    audit_log_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    table_name VARCHAR(100) NOT NULL,
+    user_auth_id UUID REFERENCES user_auth(user_auth_id),
+    action_type VARCHAR(20) NOT NULL,
+    old_data JSONB,
+    new_data JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+indexes for performance
+
+CREATE INDEX idx_user_auth_email ON user_auth(email);
+CREATE INDEX idx_audit_logs_table_name ON audit_logs(table_name);
+CREATE INDEX idx_audit_logs_user_auth_id ON audit_logs(user_auth_id);
+
+-------------------------------------Trigger Function----------------------------------------
+
+CREATE OR REPLACE FUNCTION log_audit()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- INSERT action
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO audit_logs(table_name, user_auth_id, action_type, new_data, created_at)
+        VALUES (TG_TABLE_NAME, current_setting('app.current_user_id')::uuid, 'INSERT', row_to_json(NEW), CURRENT_TIMESTAMP);
+        RETURN NEW;
+    END IF;
+
+    -- UPDATE action
+    IF TG_OP = 'UPDATE' THEN
+        INSERT INTO audit_logs(table_name, user_auth_id, action_type, old_data, new_data, created_at)
+        VALUES (TG_TABLE_NAME, current_setting('app.current_user_id')::uuid, 'UPDATE', row_to_json(OLD), row_to_json(NEW), CURRENT_TIMESTAMP);
+        RETURN NEW;
+    END IF;
+
+    -- DELETE action
+    IF TG_OP = 'DELETE' THEN
+        INSERT INTO audit_logs(table_name, user_auth_id, action_type, old_data, created_at)
+        VALUES (TG_TABLE_NAME, current_setting('app.current_user_id')::uuid, 'DELETE', row_to_json(OLD), CURRENT_TIMESTAMP);
+        RETURN OLD;
+    END IF;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+
+---------------------------------------Triggers---------------------------------------------
+-- user_auth table
+CREATE TRIGGER trg_audit_user_auth
+AFTER INSERT OR UPDATE OR DELETE ON user_auth
+FOR EACH ROW EXECUTE FUNCTION log_audit();
+-- roles table
+CREATE TRIGGER trg_audit_roles
+AFTER INSERT OR UPDATE OR DELETE ON roles
+FOR EACH ROW EXECUTE FUNCTION log_audit();
+-- user_roles table
+CREATE TRIGGER trg_audit_user_roles
+AFTER INSERT OR UPDATE OR DELETE ON user_roles
+FOR EACH ROW EXECUTE FUNCTION log_audit();

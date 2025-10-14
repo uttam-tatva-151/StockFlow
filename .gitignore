@@ -1,0 +1,14 @@
+StockFlow.API/**/obj/
+StockFlow.API/**/bin/
+
+StockFlow.API/**/*.user
+StockFlow.UI/**/*.user
+
+StockFlow.UI/obj
+StockFlow.UI/.angular
+StockFlow.UI/.vscode
+StockFlow.UI/dist
+StockFlow.UI/node_modules
+StockFlow.UI/package-lock.json
+
+**/.vs
