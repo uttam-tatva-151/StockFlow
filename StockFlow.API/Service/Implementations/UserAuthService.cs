@@ -1,28 +1,103 @@
-﻿using StockFlow.Common.Exceptions;
-using StockFlow.Repository.Criteria;
+﻿using StockFlow.Repository.Criteria;
 using StockFlow.Repository.Entities;
 using StockFlow.Repository.Interfaces;
-using StockFlow.service.DTOs.UserAuth;
 using StockFlow.Service.DTOs.UserAuth;
 using StockFlow.Service.Interfaces;
-using StockFlow.Service.Record;
-using Service.Common.Mappings;
 using StockFlow.Common.Models;
 using StockFlow.Service.DTOs.User;
+using StockFlow.Common.Constants;
 
 namespace StockFlow.Service.Implementations;
 
-public class UserAuthService(IUserAuthRepository repository) : GenericService<UserAuth, UserAuthDTO>(repository), IUserAuthService
+public class UserAuthService(IUserAuthRepository repository, IJWTService jwtService) : GenericService<UserAuth, UserAuthDTO>(repository), IUserAuthService
 {
     private readonly IUserAuthRepository _userAuthRepository = repository;
+    private readonly IJWTService _jwtService = jwtService;
     public async Task<ApiResponse> AuthenticateUserAsync(UserAuthDTO request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        try
+        {
+            // Fetch user
+            UserAuth user = await GetUserByEmailAsync(request.Email, cancellationToken);
+            if (user == null)
+                return ApiResponse.FailResponse(Constant.ErrorMessages.InvalidCredentials);
+
+            // Validate password
+            if (!VerifyPassword(request.Password, user.PasswordHash))
+                return ApiResponse.FailResponse(Constant.ErrorMessages.InvalidCredentials);
+
+            // Generate token
+            var token = _jwtService.GenerateAccessTokenAsync(user.Id, user.Email);
+
+            UserAuthResponseDTO result = new()
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                AccountCreatedOn = user.CreatedDate.ToString(),
+            };
+
+            return ApiResponse.SuccessResponse(Constant.SuccessMessages.LoginSuccessfully, result);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.FailResponse($"Authentication failed: {ex.Message}");
+        }
     }
 
-    public Task<ApiResponse> RegisterUserAsync(NewUserDTO request, CancellationToken cancellationToken)
+
+    public async Task<ApiResponse> RegisterUserAsync(NewUserDTO request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        try
+        {
+            // Check if user already exists
+            UserAuth existingUser = await GetUserByEmailAsync(request.EmailId, cancellationToken);
+            if (existingUser != null)
+                return ApiResponse.FailResponse(Constant.ErrorMessages.InvalidCredentials);
+
+            // Hash password
+            string hashedPassword = HashPassword(request.Password);
+
+            // Create new entity
+            UserAuth newUser = new()
+            {
+                Email = request.EmailId,
+                PasswordHash = hashedPassword,
+                LastLoginAt = DateTime.UtcNow,
+                CreatedDate = DateTime.UtcNow,
+                IsActive = true,
+            };
+
+            await AddAsync(newUser, false, cancellationToken);
+
+            object result = new { newUser.Id, newUser.Email };
+
+            return ApiResponse.SuccessResponse(Constant.SuccessMessages.RegisterSuccessfully, result);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.FailResponse($"Registration failed: {ex.Message}");
+        }
+    }
+
+    // -----------------------------
+    // PRIVATE HELPER METHODS
+    // -----------------------------
+    private async Task<UserAuth?> GetUserByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        return await _userAuthRepository.GetFirstOrDefaultAsync(
+            new Filters<UserAuth>() { Filter = u => u.Email == email && u.IsActive },
+            cancellationToken
+        );
+    }
+
+    private static string HashPassword(string password)
+    {
+        return BCrypt.Net.BCrypt.HashPassword(password);
+    }
+
+    private static bool VerifyPassword(string password, string hashedPassword)
+    {
+        return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
     }
 
     // public async Task<UserAuthDTO> GetById(int id, CancellationToken cancellationToken)

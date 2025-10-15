@@ -20,6 +20,7 @@ public static class Constant
         public const string InternalServerError = "Internal Server Error.";
         public const string UnhandledException = "Unhandled exception occurred.";
         public const string InvalidRefreshToken = "Invalid Refresh Token";
+        public const string InvalidCredentials = "Invalid credentials.";
     }
 
     public static class SuccessMessages
@@ -27,7 +28,13 @@ public static class Constant
         public const string AddedSuccessfully = "{0} added successfully";
         public const string UpdatedSuccessfully = "{0} updated successfully";
         public const string DeletedSuccessfully = "{0} deleted successfully";
+        public const string LoginSuccessfully = "Login Successfully";
+        public const string RegisterSuccessfully = "User registered successfully.";
 
+    }
+    public static class WarningMessages
+    {
+        public const string EmailAlreadyExists = "User with this email already exists.";
     }
     public static class JWT 
     {

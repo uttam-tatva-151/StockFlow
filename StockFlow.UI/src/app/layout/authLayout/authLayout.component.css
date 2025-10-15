@@ -1,0 +1,33 @@
+.auth-layout {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  background-color: #f9f9f9;
+  padding: 20px;
+}
+
+.auth-layout .auth-brand {
+  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #3f51b5;
+  text-align: center;
+}
+
+.auth-layout .auth-card {
+  width: 100%;
+  max-width: 400px;
+  background-color: #ffffff;
+  padding: 30px 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.auth-layout .auth-footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #777;
+}

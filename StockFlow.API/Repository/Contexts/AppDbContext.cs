@@ -20,7 +20,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration(new UserRoleConfiguration());
 
         base.OnModelCreating(modelBuilder);
-        InitialAuthModuleSeed.Seed(modelBuilder);
+        // InitialAuthModuleSeed.Seed(modelBuilder);
     }
 
     #endregion

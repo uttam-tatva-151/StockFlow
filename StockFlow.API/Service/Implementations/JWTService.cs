@@ -31,7 +31,10 @@ namespace StockFlow.Service.Implementations
 
             return GenerateJweToken(userId!.ToString(), email, _jwtSettings.AccessTokenExpiryMinutes, "access");
         }
-
+        public async Task<string> GenerateAccessTokenAsync(Guid userId, string email)
+        {
+            return GenerateJweToken(userId.ToString(), email, _jwtSettings.AccessTokenExpiryMinutes, Constant.JWT.AccessToken);
+        }
         public async Task<string> GenerateRefreshTokenAsync(Guid userId, string email)
         {
             string token = GenerateJweToken(userId.ToString(), email, _jwtSettings.RefreshTokenExpiryDays * 24 * 60, Constant.JWT.RefreshToken);

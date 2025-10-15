@@ -12,6 +12,7 @@ public static class DependencyInjection
         //Registering Services
         services.AddScoped(typeof(IGenericService<,>), typeof(GenericService<,>));
         services.AddScoped<IUserAuthService, UserAuthService>();
+        services.AddScoped<IJWTService, JWTService>();
 
     }
 }
