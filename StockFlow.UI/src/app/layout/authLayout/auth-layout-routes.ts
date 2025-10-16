@@ -10,6 +10,11 @@ export  const authLayoutRoutes: Routes = [
     component: AuthLayoutComponent,
     children: [
       {
+        path: '',
+        redirectTo: `${RoutePath.AUTH_LAYOUT.LOGIN_PATH}`,
+        pathMatch: 'full'
+      },
+      {
         path: `${RoutePath.AUTH_LAYOUT.LOGIN_PATH}`,
         component: LoginComponent
       },

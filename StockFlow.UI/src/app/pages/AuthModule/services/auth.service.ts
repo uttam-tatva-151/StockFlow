@@ -1,17 +1,22 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { EndPoints } from '../../../shared/constants/end-points';
+import { ApiService } from '../../../shared/services/api.service';
+import { ApiResponse } from '../../../shared/models/api-response';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  constructor(private _http: HttpClient) { }
+  constructor(private apiService: ApiService) { }
   login(credentials: { email: string; password: string }): Observable<any>{
-    return this._http.post('/api/auth/login', credentials);
+    const url = `${EndPoints.AUTH.LOGIN}`;
+    return this.apiService.post<ApiResponse<boolean>>(url, credentials);
   }
   register(data: { userName: string; email: string; password: string }): Observable<any>{
-    return this._http.post('/api/auth/register', data);
+    const url = `${EndPoints.AUTH.REGISTER}`;
+    return this.apiService.post<ApiResponse<boolean>>(url, data);
   }
 }
