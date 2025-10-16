@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { SnackbarService } from '../../../shared/services/snackbar.service';
 
 @Component({
   selector: 'app-login',
@@ -13,6 +14,7 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule, ReactiveFormsModule, RouterModule]
 })
 export class LoginComponent {
+  private snackbar = inject(SnackbarService);
   private fb = inject(NonNullableFormBuilder);
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -39,8 +41,20 @@ export class LoginComponent {
 
     const { email, password } = this.loginForm.getRawValue();
     this.authService.login({ email, password }).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
-      error: (err) => this.errorMessage.set(err.error?.message ?? 'Login failed'),
+      next: (response) => {
+        if (response.success) {
+          this.snackbar.success(response.message || 'Login successful!');
+        } else {
+          this.snackbar.error(response.message || 'Something went wrong');
+        }
+        this.router.navigate(['/dashboard'])
+
+      },
+      error: (err) => {
+        // this.errorMessage.set(err.error?.message ?? 'Login failed')
+        const msg = err?.error?.message || 'An unexpected error occurred';
+      this.snackbar.error(msg);
+      },
     });
   }
 }

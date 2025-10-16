@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { EndPoints } from '../../../shared/constants/end-points';
 
 @Component({
   selector: 'app-register',
@@ -54,7 +55,7 @@ export class RegisterComponent {
     const { userName, email, password } = this.registerForm.getRawValue();
 
     this.authService.register({ userName, email, password }).subscribe({
-      next: () => this.router.navigate(['/auth/login']),
+      next: () => this.router.navigate([EndPoints.AUTH.LOGIN]),
       error: (err) =>
         this.errorMessage.set(err.error?.message ?? 'Registration failed. Please try again.'),
     });
