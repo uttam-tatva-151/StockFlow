@@ -17,6 +17,7 @@ public class AuthenticationController(IUserAuthService UserAuthService) : BaseCo
     public async Task<IActionResult> LoginUser([FromBody] UserAuthDTO request, CancellationToken cancellationToken)
     {
         ApiResponse response = await _UserAuthService.AuthenticateUserAsync(request, cancellationToken);
+
         return Ok(response);
     }
     [AllowAnonymous]

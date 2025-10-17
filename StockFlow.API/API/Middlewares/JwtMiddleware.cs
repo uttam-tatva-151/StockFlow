@@ -52,7 +52,7 @@ public class JWTMiddleware(RequestDelegate next, ILogger<JWTMiddleware> logger)
         return context.Request.Headers[Constant.JWT.RefreshTokenHeader].FirstOrDefault();
     }
 
-    private static async Task HandleTokenValidationAsync(
+    private async Task HandleTokenValidationAsync(
         HttpContext context,
         IJWTService jwtService,
         string? accessToken,
@@ -68,16 +68,16 @@ public class JWTMiddleware(RequestDelegate next, ILogger<JWTMiddleware> logger)
         }
     }
 
-    private static async Task ValidateAccessTokenAsync(HttpContext context, IJWTService jwtService, string token)
+    private async Task ValidateAccessTokenAsync(HttpContext context, IJWTService jwtService, string token)
     {
         ClaimsPrincipal principal = jwtService.GetPrincipalFromToken(token, validateLifetime: true);
         if (principal != null)
             context.User = principal;
     }
 
-    private static async Task ValidateRefreshTokenAsync(HttpContext context, IJWTService jwtService, string refreshToken)
+    private async Task ValidateRefreshTokenAsync(HttpContext context, IJWTService jwtService, string refreshToken)
     {
-        bool isValid = await jwtService.ValidateRefreshTokenAsync(refreshToken);
+        bool isValid = jwtService.ValidateRefreshTokenAsync(refreshToken);
 
         if (!isValid)
         {
@@ -98,7 +98,7 @@ public class JWTMiddleware(RequestDelegate next, ILogger<JWTMiddleware> logger)
         }
     }
 
-    private static async Task WriteErrorAsync(HttpContext context, HttpStatusCode statusCode, string error, string message)
+    private async Task WriteErrorAsync(HttpContext context, HttpStatusCode statusCode, string error, string message)
     {
         context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = Constant.ContentTypes.ApplicationJson;

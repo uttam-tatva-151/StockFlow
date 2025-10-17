@@ -52,7 +52,7 @@ public class UserAuthService(IUserAuthRepository repository, IJWTService jwtServ
             // Check if user already exists
             UserAuth existingUser = await GetUserByEmailAsync(request.EmailId, cancellationToken);
             if (existingUser != null)
-                return ApiResponse.FailResponse(Constant.ErrorMessages.InvalidCredentials);
+                return ApiResponse.FailResponse(Constant.WarningMessages.EmailAlreadyExists);
 
             // Hash password
             string hashedPassword = HashPassword(request.Password);

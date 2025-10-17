@@ -4,6 +4,7 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { EndPoints } from '../../../shared/constants/end-points';
+import { SnackbarService } from '../../../shared/services/snackbar.service';
 
 @Component({
   selector: 'app-register',
@@ -12,6 +13,8 @@ import { EndPoints } from '../../../shared/constants/end-points';
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
 })
 export class RegisterComponent {
+
+    private snackbar = inject(SnackbarService);
   private fb = inject(NonNullableFormBuilder);
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -19,7 +22,7 @@ export class RegisterComponent {
   // --- Reactive form with validators ---
   registerForm = this.fb.group({
     userName: ['', [Validators.required, Validators.minLength(3)]],
-    email: ['', [Validators.required, Validators.email]],
+    emailId: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', [Validators.required]],
   });
@@ -30,7 +33,7 @@ export class RegisterComponent {
 
   // --- Getters using computed() ---
   userNameCtrl = computed(() => this.registerForm.controls.userName);
-  emailCtrl = computed(() => this.registerForm.controls.email);
+  emailIdCtrl = computed(() => this.registerForm.controls.emailId);
   passwordCtrl = computed(() => this.registerForm.controls.password);
   confirmPasswordCtrl = computed(() => this.registerForm.controls.confirmPassword);
 
@@ -52,12 +55,21 @@ export class RegisterComponent {
       return;
     }
 
-    const { userName, email, password } = this.registerForm.getRawValue();
+    const { userName, emailId, password } = this.registerForm.getRawValue();
 
-    this.authService.register({ userName, email, password }).subscribe({
-      next: () => this.router.navigate([EndPoints.AUTH.LOGIN]),
-      error: (err) =>
-        this.errorMessage.set(err.error?.message ?? 'Registration failed. Please try again.'),
+    this.authService.register({ userName, emailId, password }).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.snackbar.success(response.message || 'Registration successful!');
+        } else {
+          this.snackbar.error(response.message || 'Something went wrong');
+        }
+        this.router.navigate([EndPoints.AUTH.LOGIN])
+
+      },
+      error: (err) =>{
+        const msg = err.error?.message ?? 'Registration failed. Please try again.';
+        this.snackbar.error(msg);}
     });
   }
 }

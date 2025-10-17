@@ -29,16 +29,16 @@
     <input
       id="email"
       type="email"
-      formControlName="email"
+      formControlName="emailId"
       placeholder="Enter your email"
       autocomplete="email"
     />
-    @if (submitted() && emailCtrl().invalid) {
+    @if (submitted() && emailIdCtrl().invalid) {
       <div class="error">
-        @if (emailCtrl().hasError('required')) {
+        @if (emailIdCtrl().hasError('required')) {
           <span>Email is required</span>
         }
-        @if (emailCtrl().hasError('email')) {
+        @if (emailIdCtrl().hasError('email')) {
           <span>Email is invalid</span>
         }
       </div>

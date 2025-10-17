@@ -15,7 +15,7 @@ export class AuthService {
     const url = `${EndPoints.AUTH.LOGIN}`;
     return this.apiService.post<ApiResponse<boolean>>(url, credentials);
   }
-  register(data: { userName: string; email: string; password: string }): Observable<any>{
+  register(data: { userName: string; emailId: string; password: string }): Observable<any>{
     const url = `${EndPoints.AUTH.REGISTER}`;
     return this.apiService.post<ApiResponse<boolean>>(url, data);
   }
