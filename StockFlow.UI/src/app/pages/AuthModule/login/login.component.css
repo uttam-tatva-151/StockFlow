@@ -1,0 +1,129 @@
+.auth-form {
+  background: #ffffff;
+  width: inherit;
+  padding: 40px 35px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: all 0.3s ease;
+}
+.form-title {
+  text-align: center;
+  color: #111827;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.95rem;
+  align-self: flex-start;
+}
+
+input {
+  padding: 10px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 10px;
+  outline: none;
+  font-size: 0.95rem;
+  color: #111827;
+  background-color: #f9fafb;
+  transition: all 0.2s ease-in-out;
+}
+
+input:focus {
+  border-color: #3b82f6;
+  background-color: #fff;
+  box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+}
+
+.error {
+  margin-top: 2px;
+  color: #dc2626;
+  font-size: 0.85rem;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.error-message {
+  text-align: center;
+  color: #b91c1c;
+  font-size: 0.9rem;
+  background: #fee2e2;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border-left: 4px solid #ef4444;
+  animation: fadeIn 0.4s ease;
+}
+
+.btn {
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 0;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  transform: translateY(-2px);
+}
+
+.btn-primary:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.form-footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #4b5563;
+  margin-top: 10px;
+}
+
+.form-footer a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+
+}
+
+.form-footer a:hover {
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 450px) {
+  .auth-form {
+    width: 90%;
+    padding: 30px 20px;
+  }
+}

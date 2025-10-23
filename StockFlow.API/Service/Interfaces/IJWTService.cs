@@ -11,7 +11,8 @@ namespace StockFlow.Service.Interfaces
     {
         Task<string> GenerateAccessTokenFromRefreshTokenAsync(string refreshToken);
         ClaimsPrincipal GetPrincipalFromToken(string token, bool validateLifetime);
-        Task<bool> ValidateRefreshTokenAsync(string refreshToken);
+        bool ValidateRefreshTokenAsync(string refreshToken);
         Task<string> GenerateAccessTokenAsync(Guid userId, string email);
+        Task<string> GenerateRefreshTokenAsync(Guid userId, string email);
     }
 }

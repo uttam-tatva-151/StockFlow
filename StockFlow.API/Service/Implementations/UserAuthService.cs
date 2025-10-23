@@ -1,14 +1,11 @@
-﻿using StockFlow.Common.Exceptions;
-using StockFlow.Repository.Criteria;
+﻿using StockFlow.Repository.Criteria;
 using StockFlow.Repository.Entities;
 using StockFlow.Repository.Interfaces;
-using StockFlow.service.DTOs.UserAuth;
 using StockFlow.Service.DTOs.UserAuth;
 using StockFlow.Service.Interfaces;
-using StockFlow.Service.Record;
-using Service.Common.Mappings;
 using StockFlow.Common.Models;
 using StockFlow.Service.DTOs.User;
+using StockFlow.Common.Constants;
 
 namespace StockFlow.Service.Implementations;
 

@@ -2,12 +2,12 @@
 
 public class AuditableEntity<T> : Entity<T> where T : struct
 {
-    public int? CreatedBy { get; set; }
+    public Guid? CreatedBy { get; set; }
 
-    public DateTime? CreatedDate { get; set; }
+    public DateTime? CreatedDate { get; set; } = DateTime.UtcNow;
 
-    public int? ModifiedBy { get; set; }
+    public Guid? ModifiedBy { get; set; }
 
-    public DateTime? ModifiedDate { get; set; }
+    public DateTime? ModifiedDate { get; set; } = DateTime.UtcNow;
 }
 

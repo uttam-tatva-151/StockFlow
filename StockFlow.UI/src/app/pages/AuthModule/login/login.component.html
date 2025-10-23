@@ -1,0 +1,60 @@
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+  <h2 class="form-title">Login</h2>
+
+  <!-- Email -->
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      placeholder="Enter your email"
+      autocomplete="username"
+    />
+    @if (submitted() && emailCtrl().invalid) {
+      <div class="error">
+        @if (emailCtrl().hasError('required')) {
+          <span>Email is required</span>
+        }
+        @if (emailCtrl().hasError('email')) {
+          <span>Email is invalid</span>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Password -->
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      placeholder="Enter your password"
+      autocomplete="current-password"
+    />
+    @if (submitted() && passwordCtrl().invalid) {
+      <div class="error">
+        @if (passwordCtrl().hasError('required')) {
+          <span>Password is required</span>
+        }
+        @if (passwordCtrl().hasError('minlength')) {
+          <span>Password must be at least 8 characters</span>
+        }
+      </div>
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">
+    Login
+  </button>
+
+  <p class="form-footer">
+    Don’t have an account?
+    <a routerLink="../register">Register here</a>
+  </p>
+</form>

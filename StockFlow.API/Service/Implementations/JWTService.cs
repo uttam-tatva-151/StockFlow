@@ -26,20 +26,72 @@ namespace StockFlow.Service.Implementations
         public async Task<string> GenerateAccessTokenFromRefreshTokenAsync(string refreshToken)
         {
                 ClaimsPrincipal principal = GetPrincipalFromToken(refreshToken, validateLifetime: true);
-            string userId = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            Guid userId = Guid.Parse(principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
             string email = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-            return GenerateJweToken(userId!.ToString(), email, _jwtSettings.AccessTokenExpiryMinutes, "access");
+            return await GenerateAccessTokenAsync(userId, email);
         }
+        public async Task<string> GenerateAccessTokenAsync(Guid userId, string email)
+        {
+            List<Claim> claims =
+            [
+                new(ClaimTypes.NameIdentifier, userId.ToString()),
+                new(ClaimTypes.Email, email),
+                new("token_type", Constant.JWT.AccessToken)
+            ];
 
+            SymmetricSecurityKey key = new (Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+            SigningCredentials creds = new (key, SecurityAlgorithms.HmacSha256);
+
+            JwtSecurityToken token = new (
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(_jwtSettings.AccessTokenExpiryMinutes),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token)??string.Empty;
+        }
         public async Task<string> GenerateRefreshTokenAsync(Guid userId, string email)
         {
-            string token = GenerateJweToken(userId.ToString(), email, _jwtSettings.RefreshTokenExpiryDays * 24 * 60, Constant.JWT.RefreshToken);
+            List<Claim> claims =
+            [
+                new(ClaimTypes.NameIdentifier, userId.ToString()),
+                new(ClaimTypes.Email, email),
+                new("token_type", Constant.JWT.RefreshToken)
+            ];
 
-            return token;
+            byte[] key = Encoding.UTF8.GetBytes(_jwtSettings.EncryptingCredentialsKey);
+
+            SigningCredentials signingCredentials = new(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256
+            );
+
+            EncryptingCredentials encryptingCredentials = new(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.Aes256KW,
+                SecurityAlgorithms.Aes256CbcHmacSha512
+            );
+
+            SecurityTokenDescriptor tokenDescriptor = new()
+            {
+                Issuer = _jwtSettings.Issuer,
+                Audience = _jwtSettings.Audience,
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddDays(_jwtSettings.RefreshTokenExpiryDays),
+                SigningCredentials = signingCredentials,
+                EncryptingCredentials = encryptingCredentials
+            };
+
+            JwtSecurityTokenHandler tokenHandler = new();
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return new JwtSecurityTokenHandler().WriteToken(token) ?? string.Empty;
         }
 
-        public async Task<bool> ValidateRefreshTokenAsync(string refreshToken)
+        public bool ValidateRefreshTokenAsync(string refreshToken)
         {
             if (string.IsNullOrWhiteSpace(refreshToken))
                 return false;
@@ -48,7 +100,11 @@ namespace StockFlow.Service.Implementations
             {
                 ClaimsPrincipal principal = GetPrincipalFromToken(refreshToken, validateLifetime: true);
                 string tokenType = principal.Claims.FirstOrDefault(c => c.Type == "token_type")?.Value;
-                return tokenType == Constant.JWT.RefreshToken;
+                string userId = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                string email = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+                bool isValid = tokenType == Constant.JWT.RefreshToken && !string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(email);
+                return isValid;
             }
             catch
             {
@@ -69,70 +125,31 @@ namespace StockFlow.Service.Implementations
         public ClaimsPrincipal GetPrincipalFromToken(string token, bool validateLifetime)
         {
             JwtSecurityTokenHandler tokenHandler = new();
-            byte[] key = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
+            byte[] signingKey = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
+            byte[] decryptingKey = Encoding.UTF8.GetBytes(_jwtSettings.EncryptingCredentialsKey);
 
             TokenValidationParameters validationParameters = new ()
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
+                IssuerSigningKey = new SymmetricSecurityKey(signingKey),
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidIssuer = _jwtSettings.Issuer,
                 ValidAudience = _jwtSettings.Audience,
                 ClockSkew = TimeSpan.Zero,
                 ValidateLifetime = validateLifetime,
-                TokenDecryptionKey = new SymmetricSecurityKey(key)
+                TokenDecryptionKey = new SymmetricSecurityKey(decryptingKey)
             };
 
             try
             {
                 return tokenHandler.ValidateToken(token, validationParameters, out _);
             }
-            catch (Exception ex)
+            catch
             {
                 throw new SecurityTokenException(Constant.JWT.InvalidAccessToken);
             }
         }
-
-        #region Private Helpers
-        private string GenerateJweToken(string userId, string userEmail, double expiryMinutes, string tokenType)
-        {
-            List<Claim> claims =
-            [
-                new(ClaimTypes.NameIdentifier, userId),
-                new(ClaimTypes.Email, userEmail),
-                new("token_type", tokenType)
-            ];
-
-            byte[] key = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
-
-            SigningCredentials signingCredentials = new (
-                new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256
-            );
-
-            EncryptingCredentials encryptingCredentials = new (
-                new SymmetricSecurityKey(key),
-                SecurityAlgorithms.Aes256KW,
-                SecurityAlgorithms.Aes256CbcHmacSha512
-            );
-
-            SecurityTokenDescriptor tokenDescriptor = new ()
-            {
-                Issuer = _jwtSettings.Issuer,
-                Audience = _jwtSettings.Audience,
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddMinutes(expiryMinutes),
-                SigningCredentials = signingCredentials,
-                EncryptingCredentials = encryptingCredentials
-            };
-
-            JwtSecurityTokenHandler tokenHandler = new ();
-            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-        #endregion
     }
 
 }

@@ -7,6 +7,7 @@ using StockFlow.API.Extensions;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddConfigurationBindings(builder.Configuration);
+
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();

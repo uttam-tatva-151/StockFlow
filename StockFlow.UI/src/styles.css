@@ -1,1 +1,55 @@
-/* You can add global styles to this file, and also import other style files */
+.mat-mdc-snack-bar-container {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  padding: 0 !important;
+  animation: fadeIn 0.3s ease-out;
+  font-family: 'Poppins', sans-serif;
+}
+
+.snackbar-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  font-size: 15px;
+  color: #fff;
+}
+
+.snackbar-icon {
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✅ Success */
+.snackbar-success {
+  background: linear-gradient(135deg, #43a047, #66bb6a);
+}
+
+/* ❌ Error */
+.snackbar-error {
+  background: linear-gradient(135deg, #d32f2f, #ef5350);
+}
+
+/* ℹ️ Info */
+.snackbar-info {
+  background: linear-gradient(135deg, #1976d2, #42a5f5);
+}
+
+/* ⚠️ Warning */
+.snackbar-warning {
+  background: linear-gradient(135deg, #f57c00, #ffb300);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
